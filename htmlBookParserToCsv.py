@@ -43,40 +43,42 @@ class Html_book_parser:
 
         return listOfHighlights
 
-def html_book_highlights_to_csv(html_file_full_path, excel_file_name):
+# Returns the highlights of a book as follows: (book_name, author, highlighted_note)
+def get_html_book_highlights_entries(html_file_full_path, return_list):
     html_parser = Html_book_parser(html_file_full_path)
     book_name = html_parser.get_book_name().replace(",", "")
     author_name = html_parser.get_author_name().replace(",","")
     highlights_list = html_parser.get_highlights()
+    for highlight in highlights_list:
+        return_list.append((book_name, author_name, highlight))
 
+def html_book_highlights_to_csv(html_file_names, excel_file_name):
+    return_list = []
     # Workbook is created
     wb = Workbook()
-
     # add_sheet is used to create sheet.
     sheet1 = wb.add_sheet('Sheet 1')
-    idx = 0
-    for highlight in highlights_list:
-        sheet1.write(idx, 0, book_name)
-        sheet1.write(idx, 1, author_name)
-        sheet1.write(idx, 2, highlight)
-        idx += 1
+    for html_file_full_path in html_file_names:
+        html_parser = Html_book_parser(html_file_full_path)
+        book_name = html_parser.get_book_name().replace(",", "")
+        author_name = html_parser.get_author_name().replace(",","")
+        highlights_list = html_parser.get_highlights()
+        get_html_book_highlights_entries(html_file_full_path, return_list)
+        print("transformed the file: {} successfully to excel rows".format(html_file_full_path))
 
+    row_idx = 0
+    for list_item in return_list:
+        col_idx = 0
+        for item in list_item:
+            sheet1.write(row_idx, col_idx, item)
+            col_idx += 1
+        row_idx += 1
     wb.save(excel_file_name)
-
-    # # open the file in the write mode
-    # f = open(csv_file_name, 'w',errors="ignore")
-    # # create the csv writer
-    # writer = csv.writer(f)
-    # for highlight in highlights_list:
-    #     highlight = highlight.replace(",", "")
-    #     csv_row = book_name + "," + author_name + "," + highlight
-    #     print(csv_row)
-    #     writer.writerow(csv_row)
-    # f.close()
-    # print("printed successfully to the csv, whose name is " + csv_file_name)
+    print('Save to excel sheet with name {} complete'.format(html_file_full_path))
 
 if __name__ == '__main__':
-    html_file_name = 'Atomic Habits_ The life-changing million copy bestseller - Notebook.html'
+    html_file_names = ['Atomic Habits_ The life-changing million copy bestseller - Notebook.html', 'Show Your Work!_ 10 Ways to Share Your Creativity and Get Discovered - Notebook.html', 'Sleep Smarter_ 21 Essential Strategies to Sleep Your Way to A Better Body, Better Health, and Bigger Success - Notebook.html', 'Steal Like an Artist_ 10 Things Nobody Told You About Being Creative - Notebook.html', 'The Subtle Art of Not Giving a F_ck_ A Counterintuitive Approach to Living a Good Life (Mark Manson Collection Book 1) - Notebook.html']
     excel_file_name = 'output.xls'
-    html_book_highlights_to_csv(html_file_name, excel_file_name)
+    html_book_highlights_to_csv(html_file_names, excel_file_name)
+    
     
